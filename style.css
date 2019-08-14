@@ -1,0 +1,33 @@
+select, button {
+    padding: 5px 8px;
+}
+#game-wrapper {
+    text-align: center;
+}
+#game-area table {
+    border-collapse: collapse;
+    margin: auto;
+}
+#game-area table td {
+    border: 1px solid black;
+    width: 4em;
+    height: 4em;
+    text-align: center;
+    font-weight: bold;
+    background-size: cover;
+}
+#game-area table td:hover {
+    background-color: #80ff00;
+}
+#game-area table td.selected {
+    background-color: #20B255;
+}
+#game-area table.piece-selected td:hover:not(.selected) {
+    background-color: red;
+}
+.light-square {
+    background: #fec;
+}
+.dark-square {
+    background: #933;
+}
