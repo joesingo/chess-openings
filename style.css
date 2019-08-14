@@ -25,9 +25,15 @@ select, button {
 #game-area table.piece-selected td:hover:not(.selected) {
     background-color: red;
 }
+#message-area {
+    height: 2em;
+}
 .light-square {
     background: #fec;
 }
 .dark-square {
     background: #933;
+}
+.error {
+    color: red;
 }

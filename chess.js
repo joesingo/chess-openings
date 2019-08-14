@@ -68,8 +68,9 @@ class Cell {
  * Representation of the entire chess board
  */
 class ChessBoard {
-    constructor(opening) {
+    constructor(opening, message_handler) {
         this.opening = opening;
+        this.message_handler = message_handler;
         this.current_player = WHITE;
         this.moves_played = 0;
         this.cells = this.create_cells();
@@ -108,6 +109,8 @@ class ChessBoard {
         // Reset display area and add table
         game_area.innerHTML = "";
         game_area.appendChild(this.table);
+
+        this.message_handler.clear();
 
         if (this.current_player != this.opening.player_colour) {
             this.do_cpu_move();
@@ -162,19 +165,20 @@ class ChessBoard {
      * Handle a cell in the board being clicked
      */
     handle_click(cell) {
+        this.message_handler.clear();
         if (this.finished) {
-            console.error("The opening has finished!");
+            this.message_handler.error("The opening has finished! Start a new one");
             return;
         }
         if (this.current_player != this.opening.player_colour) {
-            console.error("It's not your turn");
+            this.message_handler.error("It's not your turn");
             return;
         }
         // If haven't clicked a cell yet, then this cell should be the piece to
         // move
         if (!this.clicked_cell) {
             if (!cell.piece) {
-                console.error("Cannot move an empty cell");
+                this.message_handler.error("Cannot move an empty cell");
                 return;
             }
             this.clicked_cell = cell;
@@ -186,7 +190,7 @@ class ChessBoard {
 
         // Cannot move onto a piece with the same colour
         if (cell.piece && cell.piece.colour == this.clicked_cell.piece.colour) {
-            console.error("Cannot move onto your own piece");
+            this.message_handler.error("Cannot move onto your own piece");
             return;
         }
 
@@ -204,7 +208,7 @@ class ChessBoard {
             }
         }
         else {
-            this.show_error("Incorrect move!");
+            this.message_handler.error("Incorrect move!");
         }
         this.clicked_cell.element.classList.remove("selected");
         this.table.classList.remove("piece-selected");
@@ -259,9 +263,10 @@ class ChessBoard {
 
         if (this.moves_played == this.opening.moves.length) {
             this.finished = true;
-            // Wait the CPU move time to display alert
+            var self = this;
+            // Wait the CPU move time to display message
             setTimeout(function() {
-                alert("You did it!");
+                self.message_handler.message("You did it!");
             }, CPU_MOVE_DELAY);
         }
     }
@@ -275,12 +280,31 @@ class ChessBoard {
     moves_match(move1, move2) {
         return move1.src == move2.src && move1.dest == move2.dest;
     }
+}
 
-    /*
-     * Show an error message to the user
-     */
-    show_error(msg) {
-        alert(msg);
+/*
+ * Class to handle displaying messages to the user
+ */
+class MessageHandler {
+    constructor(element) {
+        this.element = element;
+    }
+
+    clear() {
+        this.element.textContent = "";
+    }
+
+    message(msg, cls) {
+        var p = document.createElement("p");
+        p.textContent = msg;
+        if (cls) {
+            p.classList.add(cls);
+        }
+        this.element.appendChild(p);
+    }
+
+    error(msg) {
+        this.message(msg, "error");
     }
 }
 
@@ -290,6 +314,8 @@ class ChessBoard {
 class ChessOpeningsApp {
     constructor(game_area) {
         this.game_area = document.getElementById("game-area");
+        this.message_area = document.getElementById("message-area");
+        this.message_handler = new MessageHandler(this.message_area);
 
         // Create the dropdown listing the available openings
         let dropdown = document.getElementById("opening-dropdown");
@@ -308,7 +334,7 @@ class ChessOpeningsApp {
     }
 
     go(opening) {
-        let chess_board = new ChessBoard(opening);
+        let chess_board = new ChessBoard(opening, this.message_handler);
         chess_board.start(this.game_area);
     }
 }
